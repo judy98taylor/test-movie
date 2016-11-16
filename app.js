@@ -1,8 +1,13 @@
 var express = require('express');
 var bodyParser = require('body-parser');
 var path = require('path');
+var mongoose = require('mongoose');
+var _ = require('underscore')
+var Movie = require('./models/movie.js');
 var app = express();
 var port = process.env.PORT || 3000;
+mongoose.Promise = global.Promise;
+mongoose.connect('mongodb://localhost/testMovie');
 
 app.set('views', './views/pages');
 app.set('view engine', 'jade');
@@ -16,89 +21,126 @@ console.log('ok', port);
 
 // index
 app.get('/', function(req, res) {
-    res.render('index', {
-        title: 'imooc index',
-        movies: [{
-            title: '111',
-            _id: 1,
-            poster: 'http://i5qiniu.mtime.cn/mg/2016/10/10/160212.45410947_o.jpg?imageMogr2/thumbnail/!270x405r/gravity/North/crop/270x405/dx/0/dy/0'
-        }, {
-            title: '2222',
-            _id: 2,
-            poster: 'http://i5qiniu.mtime.cn/mg/2016/10/10/160212.45410947_o.jpg?imageMogr2/thumbnail/!270x405r/gravity/North/crop/270x405/dx/0/dy/0'
-        }, {
-            title: '3333',
-            _id: 3,
-            poster: 'http://i5qiniu.mtime.cn/mg/2016/10/10/160212.45410947_o.jpg?imageMogr2/thumbnail/!270x405r/gravity/North/crop/270x405/dx/0/dy/0'
-        }, {
-            title: '4444',
-            _id: 4,
-            poster: 'http://i5qiniu.mtime.cn/mg/2016/10/10/160212.45410947_o.jpg?imageMogr2/thumbnail/!270x405r/gravity/North/crop/270x405/dx/0/dy/0'
-        }, {
-            title: '5555',
-            _id: 5,
-            poster: 'http://i5qiniu.mtime.cn/mg/2016/10/10/160212.45410947_o.jpg?imageMogr2/thumbnail/!270x405r/gravity/North/crop/270x405/dx/0/dy/0'
-        }, {
-            title: '666',
-            _id: 6,
-            poster: 'http://i5qiniu.mtime.cn/mg/2016/10/10/160212.45410947_o.jpg?imageMogr2/thumbnail/!270x405r/gravity/North/crop/270x405/dx/0/dy/0'
-        }]
+    // alert(123);
+    console.log(req.params);
+    console.log('--------------------\r\n\r\n');
+    console.log(req.body);
+
+    Movie.fetch(function(err, movies) {
+        if (err) {
+            console.log(err);
+        }
+        res.render('index', {
+            title: 'imooc index',
+            movies: movies,
+        })
     })
+
 });
 // detail
 app.get('/movie/:id', function(req, res) {
-    res.render('detail', {
-        title: 'imooc detail',
-        movie: {
-            doctor: 'asd',
-            country: 'asddsd',
-            title: 'sad',
-            year: '1111',
-            poster: 'http://i5qiniu.mtime.cn/mg/2016/10/10/160212.45410947_o.jpg?imageMogr2/thumbnail/!270x405r/gravity/North/crop/270x405/dx/0/dy/0',
-            language: 'asdasd',
-            flash: 'asdsad',
-            summary: 'asdasd'
-        }
+    var id = req.params.id;
+    Movie.findById(id, function(err, movie) {
+        res.render('detail', {
+            title: 'imooc detail',
+            movie: movie,
+        })
     })
 });
+
 // admin 
 app.get('/admin/movie', function(req, res) {
     res.render('admin', {
         title: '后台录入页面',
         movie: {
-            doctor: '',
-            country: '',
+            // doctor: '',
+            // country: '',
             title: '',
-            year: '',
-            poster: '',
-            language: '',
-            flash: '',
-            summary: ''
+            // year: '',
+            // poster: '',
+            // language: '',
+            // flash: '',
+            // summary: ''
         }
     })
 });
+
+// admin update movie  修改跳着这页面
+app.get('/admin/update/:id', function(req, res) {
+    console.log(req.params);
+    console.log('--修改跳着这页面------------------\r\n\r\n');
+    console.log(req.body);
+    var id = req.params.id;
+    if (id) {
+        Movie.findById(id, function(err, movie) {
+            res.render('admin', {
+                title: 'mooc 修改跳着这页面',
+                movie: movie
+            });
+        })
+    } else {
+        _movie = new Movie({
+            // doctor: movieObj.doctor,
+            // country: movieObj.country,
+            title: movieObj.title,
+            // year: movieObj.year,
+            // poster: movieObj.poster,
+            // language: movieObj.language,
+            // flash: movieObj.flash,
+            // summary: movieObj.summary,
+        });
+        _movie.save(function(err, movie) {
+            if (err) console.log(err);
+            res.redirect('/movie/' + movie._id);
+        });
+    }
+});
+
+// admin post movie 电影数据存储
+app.post('/admin/movie/new', function(req, res) {
+    console.log(req.params);
+    console.log('--电影数据存储------------------\r\n\r\n');
+    console.log(req.body);
+    var id = req.body.movie._id;
+    var movieObj = req.body.movie;
+    var _movie;
+    if (id !== 'undefined') {
+        Movie.findById(id, function(err, movie) {
+            if (err) {
+                console.log(err);
+            }
+            _movie = _.extend(movie, movieObj);
+            _movie.save(function(err, movie) {
+                if (err) console.log(err);
+                res.redirect('/movie/' + movie._id);
+            });
+        })
+    } else {
+        _movie = new Movie({
+            // doctor: movieObj.doctor,
+            // country: movieObj.country,
+            title: movieObj.title,
+            // year: movieObj.year,
+            // poster: movieObj.poster,
+            // language: movieObj.language,
+            // flash: movieObj.flash,
+            // summary: movieObj.summary,
+        });
+        _movie.save(function(err, movie) {
+            if (err) console.log(err);
+            res.redirect('/movie/' + movie._id);
+        });
+    }
+});
 // list
 app.get('/admin/list', function(req, res) {
-    res.render('list', {
-        title: 'imooc list',
-        movies: [{
-            doctor: 'list1',
-            country: 'asddsd',
-            title: 'sad',
-            year: '1111',
-            poster: 'http://i5qiniu.mtime.cn/mg/2016/10/10/160212.45410947_o.jpg?imageMogr2/thumbnail/!270x405r/gravity/North/crop/270x405/dx/0/dy/0',
-            language: 'asdasd',
-            flash: 'asdsad',
-            summary: 'asdasd'
-        }, {
-            doctor: 'list2',
-            country: 'asddsd',
-            title: 'sad',
-            year: '1111',
-            poster: 'http://i5qiniu.mtime.cn/mg/2016/10/10/160212.45410947_o.jpg?imageMogr2/thumbnail/!270x405r/gravity/North/crop/270x405/dx/0/dy/0',
-            language: 'asdasd',
-            flash: 'asdsad',
-            summary: 'asdasd'
-        }]
+    Movie.fetch(function(err, movies) {
+        if (err) {
+            console.log(err);
+        }
+        res.render('list', {
+            title: 'imooc list',
+            movies: movies,
+        })
     })
 });
