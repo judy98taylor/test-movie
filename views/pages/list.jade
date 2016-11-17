@@ -28,4 +28,10 @@ block content
               td
                 button.btn.btn-danger.del(type="button" data-id="#{item._id}") 删除
 
-
+  //- srcipt(type="text/javascript" async src="http://localhost:3333/lib/js/admin.js")
+  script.
+    var script = document.createElement('script');
+    script.async = "async";
+    script.src = "/lib/js/admin.js";
+       script.onload = function(){console.log(1)};
+    document.getElementsByTagName("body")[0].appendChild( script );

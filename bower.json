@@ -1,0 +1,21 @@
+{
+  "name": "test-movie",
+  "description": "asd",
+  "main": "index.js",
+  "authors": [
+    "幸运儿~ <zd9027@gmail.com>"
+  ],
+  "license": "ISC",
+  "homepage": "https://github.com/zd9027/test-movie",
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "public/lib",
+    "test",
+    "tests"
+  ],
+  "dependencies": {
+    "bootstrap": "^3.3.7"
+  }
+}

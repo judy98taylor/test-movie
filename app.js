@@ -5,7 +5,8 @@ var mongoose = require('mongoose');
 var _ = require('underscore')
 var Movie = require('./models/movie.js');
 var app = express();
-var port = process.env.PORT || 3000;
+var port = 3333;
+// var port = process.env.PORT || 3000;
 mongoose.Promise = global.Promise;
 mongoose.connect('mongodb://localhost/testMovie');
 
@@ -14,7 +15,7 @@ app.set('view engine', 'jade');
 // app.set('port', '3000');
 app.use(bodyParser());
 // __dirname是当前目录
-app.use(express.static(path.join(__dirname, 'bower_components')));
+app.use(express.static(path.join(__dirname, 'public')));
 app.listen(port);
 
 console.log('ok', port);
@@ -143,4 +144,19 @@ app.get('/admin/list', function(req, res) {
             movies: movies,
         })
     })
+});
+
+//list delete movie
+app.delete('/admin/list', function(req, res) {
+    var id = req.query.id;
+    if (id) {
+        Movie.remove({ _id: id }, function(err, movie) {
+            if (err) {
+                console.log(err);
+            } else {
+                res.json({ success: 1 });
+            }
+
+        });
+    }
 });
